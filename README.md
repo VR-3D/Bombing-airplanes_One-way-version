@@ -1,3 +1,7 @@
 # 炸飞机小游戏(单向版)
 经典童年小游戏，这次只猜AI摆放的飞机阵列
 
+![](images/.jpg)
+![](images/.jpg)
+![](images/.jpg)
+![](images/.jpg)

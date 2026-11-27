@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>炸飞机大作战 ✈️</title>
+<style>
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+  background:#EAF7FF;color:#33415C;min-height:100vh;-webkit-text-size-adjust:100%;
+}
+.app{max-width:640px;margin:0 auto;padding:16px 12px 30px;}
+.view{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.hidden{display:none !important;}
+
+/* ---------- 开始页 ---------- */
+.idle-head{position:relative;width:100%;min-height:70px;display:flex;align-items:flex-end;justify-content:center;}
+.deco{position:absolute;font-size:clamp(26px,7vw,46px);animation:bob 2.4s ease-in-out infinite;user-select:none;}
+.deco.left{left:2%;transform:rotate(-18deg);}
+.deco.right{right:2%;transform:rotate(18deg);animation-delay:.7s;}
+@keyframes bob{0%,100%{margin-top:0}50%{margin-top:-9px}}
+.title{
+  font-size:clamp(22px,6vw,40px);color:#FF6B6B;font-weight:900;text-align:center;
+  margin:0;letter-spacing:1px;line-height:1.2;
+  -webkit-text-stroke:2px #fff;paint-order:stroke fill;
+  text-shadow:0 3px 0 rgba(255,255,255,.95),0 7px 14px rgba(214,58,63,.22);
+}
+.subtitle{margin:2px 0 0;text-align:center;font-size:clamp(13px,3.4vw,16px);color:#5A6B86;}
+.steps{display:flex;gap:10px;width:100%;justify-content:center;flex-wrap:wrap;}
+.step{flex:1 1 150px;max-width:180px;background:#fff;border-radius:16px;padding:12px 10px;text-align:center;box-shadow:0 4px 12px rgba(46,134,171,.12);}
+.step-ico{font-size:26px;display:block;margin-bottom:4px;line-height:1.1;}
+.step-t{font-weight:800;color:#2E86AB;font-size:15px;}
+.step-d{font-size:12px;color:#6B7A94;margin-top:3px;line-height:1.5;}
+
+/* ---------- 按钮 ---------- */
+.btn{
+  min-height:48px;min-width:120px;border:none;border-radius:16px;padding:10px 22px;
+  font-size:16px;font-weight:800;cursor:pointer;touch-action:manipulation;
+  transition:transform .12s,background .12s,box-shadow .12s;font-family:inherit;
+}
+.btn:active{transform:translateY(2px);}
+.btn:focus-visible{outline:3px solid #FFC93C;outline-offset:3px;}
+.btn-primary{background:#FF9F43;color:#fff;box-shadow:0 4px 0 #E8822B;}
+.btn-primary:active{background:#E8822B;box-shadow:0 2px 0 #E8822B;}
+.btn-secondary{background:#2E86AB;color:#fff;box-shadow:0 4px 0 #236A88;}
+.btn-secondary:active{background:#236A88;box-shadow:0 2px 0 #236A88;}
+.btn-ghost{background:#fff;color:#2E86AB;min-height:36px;min-width:0;padding:7px 14px;font-size:13px;font-weight:700;box-shadow:0 2px 0 #CFE3F2;}
+.btn-ghost:active{background:#F0F7FC;box-shadow:0 1px 0 #CFE3F2;}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
+.play-top{width:min(94vw,520px);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.mode-badge{padding:7px 14px;border-radius:999px;font-size:13px;font-weight:900;color:#fff;white-space:nowrap;box-shadow:0 3px 8px rgba(51,65,92,.18);letter-spacing:.5px;}
+.mode-badge.mode-normal{background:#2E86AB;}
+.mode-badge.mode-tight{background:#FF9F43;box-shadow:0 3px 8px rgba(232,130,43,.35);}
+.mode-badge.mode-slant{background:#8E5FC7;box-shadow:0 3px 8px rgba(142,95,199,.35);}
+
+/* ---------- 紧凑阵型选项 ---------- */
+.opt-row{display:flex;align-items:center;gap:10px;width:min(94vw,520px);background:#fff;border-radius:16px;padding:10px 14px;box-shadow:0 4px 12px rgba(46,134,171,.12);cursor:pointer;touch-action:manipulation;}
+.opt-chk{position:absolute;opacity:0;width:0;height:0;}
+.opt-box{width:26px;height:26px;flex:none;border:3px solid #2E86AB;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;line-height:1;}
+.opt-chk:checked + .opt-box{background:#FF9F43;border-color:#E8822B;}
+.opt-chk:checked + .opt-box::after{content:"✓";}
+.opt-chk:focus-visible + .opt-box{outline:3px solid #FFC93C;outline-offset:2px;}
+.opt-text{text-align:left;}
+.opt-text b{display:block;color:#2E86AB;font-size:14px;}
+.opt-text small{display:block;color:#6B7A94;font-size:11px;margin-top:2px;}
+
+/* ---------- 排行榜 ---------- */
+.rank-card{width:min(94vw,520px);background:#fff;border-radius:18px;padding:12px 14px;box-shadow:0 4px 14px rgba(46,134,171,.14);}
+.rank-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:#2E86AB;font-weight:900;font-size:16px;}
+.rank-head .rank-tools{display:flex;align-items:center;gap:8px;}
+.rank-head small{font-size:11px;color:#8FA0B5;letter-spacing:1px;}
+.rank-clear{background:#fff;border:1px solid #CFE3F2;color:#6B7A94;border-radius:9px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;touch-action:manipulation;}
+.rank-clear:active{background:#F0F7FC;}
+.rank-clear.armed{background:#FF6B6B;border-color:#D63A3F;color:#fff;}
+.rank-list{display:flex;flex-direction:column;gap:4px;max-height:190px;overflow:auto;}
+.rank-row{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:8px;background:#F4FAFE;border-radius:10px;padding:6px 10px;font-size:13px;}
+.rank-row.r1{background:#FFF4D6;}
+.rank-row.r2{background:#EEF4F8;}
+.rank-row.r3{background:#FDF1E8;}
+.rank-no{font-weight:900;color:#E8822B;font-size:15px;text-align:center;}
+.rank-score{font-weight:900;color:#2E86AB;font-variant-numeric:tabular-nums;font-size:15px;}
+.rank-meta{display:flex;flex-direction:column;align-items:flex-end;gap:1px;color:#6B7A94;font-size:11px;text-align:right;}
+.rank-date{font-size:10px;color:#8FA0B5;white-space:nowrap;}
+.rank-empty{text-align:center;color:#8FA0B5;font-size:12px;padding:14px 0;}
+
+/* ---------- 计分条 ---------- */
+.scorebar{
+  width:min(94vw,520px);background:#fff;border-radius:18px;padding:10px 6px;
+  display:flex;justify-content:space-around;align-items:center;box-shadow:0 4px 14px rgba(46,134,171,.14);
+}
+.stat{display:flex;flex-direction:column;align-items:center;min-width:78px;}
+.stat-ico{font-size:19px;line-height:1;}
+.stat-label{font-size:12px;color:#6B7A94;margin-top:2px;}
+.stat strong{font-size:clamp(18px,4.5vw,24px);color:#2E86AB;line-height:1.2;font-variant-numeric:tabular-nums;}
+.stat.hl{padding:2px 10px;border-radius:12px;background:#FFF6E3;}
+.stat.hl strong{color:#E8822B;}
+
+/* ---------- 棋盘 ---------- */
+.board-wrap{width:100%;display:flex;justify-content:center;}
+.board{
+  width:min(94vw,520px);display:grid;grid-template-columns:repeat(11,1fr);
+  gap:2px;padding:3px;background:#CFE3F2;border:3px solid #CFE3F2;border-radius:14px;
+  box-shadow:0 6px 18px rgba(46,134,171,.16);
+}
+.hcell{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  background:#FFFDF5;color:#2E86AB;font-weight:800;font-size:clamp(10px,2.6vw,14px);border-radius:5px;user-select:none;
+}
+.cell{
+  aspect-ratio:1;border:none;border-radius:6px;background:#fff;padding:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  line-height:1.05;color:#33415C;cursor:pointer;font-family:inherit;
+  transition:background .12s,transform .12s;
+}
+.cell:hover:not(:disabled){background:#FFF3B0;}
+.cell:focus-visible{outline:3px solid #FFC93C;outline-offset:1px;z-index:2;}
+.cell:disabled{cursor:default;}
+.cell .ico{font-size:clamp(12px,3vw,17px);}
+.cell .txt{font-size:clamp(9px,2vw,11px);font-weight:800;}
+.cell.miss{background:#BFE6FA;color:#2E86AB;}
+.cell.hit{background:#FFB067;border:2px solid #E8751A;color:#7A3B09;}
+.cell.head{background:#FF6B6B;border:2px solid #D63A3F;color:#fff;}
+.cell.anim-miss{animation:splash .2s ease-out;}
+.cell.anim-hit{animation:bump .15s ease-out;}
+.cell.anim-head{animation:flash .4s ease-out;}
+@keyframes splash{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes bump{0%{transform:scale(.8)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes flash{0%{transform:scale(.7);filter:brightness(1.8)}45%{transform:scale(1.25)}100%{transform:scale(1);filter:brightness(1)}}
+
+/* ---------- 图例与提示 ---------- */
+.legend{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:min(94vw,520px);}
+.lg{display:flex;align-items:center;gap:6px;background:#fff;border-radius:12px;padding:6px 10px;font-size:12px;box-shadow:0 2px 8px rgba(46,134,171,.1);}
+.lg i{width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;font-weight:800;}
+.lg .m{background:#BFE6FA;color:#2E86AB;}
+.lg .h{background:#FFB067;color:#7A3B09;}
+.lg .k{background:#FF6B6B;color:#fff;}
+.hint{
+  width:min(94vw,520px);min-height:46px;display:flex;align-items:center;justify-content:center;
+  text-align:center;background:#fff;border-radius:14px;padding:8px 12px;
+  font-size:clamp(15px,4vw,22px);font-weight:700;color:#33415C;
+  box-shadow:0 2px 10px rgba(46,134,171,.1);transition:opacity .2s;
+}
+.hint.fade{opacity:.55;}
+
+/* ---------- 弹窗 ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(51,65,92,.48);z-index:20;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.card{
+  background:#fff;border-radius:24px;width:100%;max-width:480px;max-height:92vh;overflow:auto;
+  padding:22px 20px;box-shadow:0 16px 40px rgba(23,45,70,.3);text-align:center;
+}
+.card h2{margin:0 0 10px;color:#2E86AB;font-size:clamp(20px,5vw,26px);}
+.card.draggable{position:relative;}
+.drag-handle{cursor:grab;user-select:none;touch-action:none;}
+.drag-handle:active{cursor:grabbing;}
+.drag-tip{font-size:11px;color:#8FA0B5;margin:-6px 0 10px;}
+.help-card h2{color:#FF6B6B;-webkit-text-stroke:1px #fff;paint-order:stroke fill;}
+.help-row{display:flex;align-items:center;gap:10px;text-align:left;background:#F4FAFE;border-radius:14px;padding:9px 12px;margin-bottom:8px;}
+.help-row .sym{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;}
+.help-row .sym.m{background:#BFE6FA;}
+.help-row .sym.h{background:#FFB067;}
+.help-row .sym.k{background:#FF6B6B;}
+.help-row b{color:#33415C;font-size:15px;}
+.help-row span{display:block;color:#6B7A94;font-size:12px;margin-top:1px;}
+.help-sec{margin-top:14px;font-weight:800;color:#2E86AB;font-size:15px;}
+.plane-mini{display:grid;grid-template-columns:repeat(5,24px);grid-template-rows:repeat(4,24px);gap:2px;justify-content:center;margin:8px 0 4px;}
+.plane-mini.slant-grid{grid-template-columns:repeat(6,22px);grid-template-rows:repeat(6,22px);}
+.pm{border-radius:4px;background:#F0F5F9;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+.pm.head{background:#FF6B6B;color:#fff;}
+.pm.wing{background:#FFB067;color:#7A3B09;}
+.pm.body{background:#FFC93C;color:#7A5900;}
+.pm.tail{background:#2E86AB;color:#fff;}
+.mini-cap{font-size:12px;color:#6B7A94;}
+.score-rule{background:#FFF9E9;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.7;color:#5A4B2A;text-align:left;}
+.score-rule b{color:#E8822B;}
+
+/* ---------- 阵型揭晓网格 ---------- */
+.reveal-wrap{width:min(94vw,440px);margin:0 auto;}
+.reveal-title{font-size:13px;font-weight:800;color:#2E86AB;margin:6px 0 6px;}
+.reveal-grid{display:grid;grid-template-columns:repeat(11,1fr);gap:1px;padding:2px;background:#CFE3F2;border-radius:8px;}
+.rv-h{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#FFFDF5;color:#2E86AB;font-size:10px;font-weight:800;border-radius:3px;}
+.rv-c{aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:3px;font-size:11px;font-weight:800;color:#fff;}
+.rv-c.p0{background:#FF6B6B;}
+.rv-c.p1{background:#2E86AB;}
+.rv-c.p2{background:#55B98A;}
+.rv-c.head{outline:2px solid #33415C;outline-offset:-2px;font-size:13px;}
+.reveal-legend{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;font-size:11px;color:#6B7A94;margin-top:6px;}
+.reveal-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:3px;}
+.cheat-note{font-size:12px;color:#D63A3F;font-weight:800;margin:6px 0;}
+
+/* ---------- 密码弹窗 ---------- */
+.pwd-card{max-width:360px;}
+.pwd-card h2{color:#2E86AB;}
+.pwd-desc{font-size:13px;color:#6B7A94;line-height:1.6;margin:0 0 14px;}
+.pwd-input{
+  width:100%;text-align:center;font-size:28px;letter-spacing:12px;font-weight:900;color:#2E86AB;
+  padding:10px 14px;border:3px solid #CFE3F2;border-radius:14px;font-family:inherit;background:#F4FAFE;
+}
+.pwd-input:focus{outline:none;border-color:#FFC93C;}
+.pwd-msg{min-height:20px;font-size:13px;color:#D63A3F;margin:8px 0 2px;font-weight:700;}
+
+/* ---------- 结算 ---------- */
+.result-title{margin:0 0 2px;color:#2E86AB;font-size:clamp(20px,5vw,26px);}
+.result-score{font-size:clamp(54px,14vw,76px);font-weight:900;color:#FFC93C;line-height:1.05;text-shadow:0 3px 0 #fff,0 6px 12px rgba(255,201,60,.35);font-variant-numeric:tabular-nums;}
+.result-unit{font-size:14px;color:#6B7A94;margin-top:-4px;}
+.result-detail{font-size:14px;color:#5A6B86;margin-bottom:4px;}
+.result-high{font-size:14px;color:#E8822B;font-weight:800;margin-bottom:14px;}
+
+/* ---------- 粒子层 ---------- */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden;}
+.particle{position:absolute;font-size:16px;animation:pfly .6s ease-out forwards;}
+@keyframes pfly{from{opacity:1;transform:translate(0,0) scale(.6)}to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.3)}}
+
+@media (max-width:400px){
+  .stat{min-width:66px;}
+  .lg{padding:5px 7px;font-size:11px;}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ========== IDLE ========== -->
+  <section id="view-idle" class="view">
+    <div class="idle-head">
+      <span class="deco left" aria-hidden="true">✈️</span>
+      <h1 class="title">炸飞机大作战 ✈️</h1>
+      <span class="deco right" aria-hidden="true">✈️</span>
+    </div>
+    <p class="subtitle">找出藏在云朵里的 3 架飞机，炸掉它们的机头！</p>
+    <div class="steps">
+      <div class="step"><span class="step-ico">💣</span><div class="step-t">① 选格子投弹</div><div class="step-d">点一点棋盘上的格子</div></div>
+      <div class="step"><span class="step-ico">🔍</span><div class="step-t">② 看反馈推理</div><div class="step-d">空 / 伤 / 头 三种提示</div></div>
+      <div class="step"><span class="step-ico">✈️</span><div class="step-t">③ 炸掉机头</div><div class="step-d">击落全部 3 架飞机</div></div>
+    </div>
+    <label class="opt-row" for="chk-tight">
+      <input id="chk-tight" type="checkbox" class="opt-chk">
+      <span class="opt-box" aria-hidden="true"></span>
+      <span class="opt-text"><b>优先紧凑阵型 🎯(对应高难度榜)</b><small>三架正常方向的飞机挨得更近、更难分辨，约 9 成对局是高难度咬合影</small></span>
+    </label>
+    <label class="opt-row" for="chk-slant">
+      <input id="chk-slant" type="checkbox" class="opt-chk">
+      <span class="opt-box" aria-hidden="true"></span>
+      <span class="opt-text"><b>加入斜飞机模式 ✈️</b><small>两架正常 + 一架斜着摆，更考验眼力，独立排行榜</small></span>
+    </label>
+    <div class="btn-row">
+      <button id="btn-start" type="button" class="btn btn-primary">开始游戏</button>
+      <button id="btn-resume" type="button" class="btn btn-secondary hidden">继续游戏</button>
+      <button id="btn-help" type="button" class="btn btn-secondary">查看规则</button>
+    </div>
+    <div class="rank-card">
+      <div class="rank-head"><span>🎯 高难度榜</span><span class="rank-tools"><small>TOP 5</small><button id="btn-clear-tight" type="button" class="rank-clear" data-mode="tight">清除成绩</button></span></div>
+      <div id="rank-list-tight" class="rank-list" aria-live="polite"></div>
+    </div>
+    <div class="rank-card">
+      <div class="rank-head"><span>🛩️ 斜飞机榜</span><span class="rank-tools"><small>TOP 5</small><button id="btn-clear-slant" type="button" class="rank-clear" data-mode="slant">清除成绩</button></span></div>
+      <div id="rank-list-slant" class="rank-list" aria-live="polite"></div>
+    </div>
+    <div class="rank-card">
+      <div class="rank-head"><span>✈️ 普通榜(不勾选，直接点-开始游戏)</span><span class="rank-tools"><small>TOP 5</small><button id="btn-clear-normal" type="button" class="rank-clear" data-mode="normal">清除成绩</button></span></div>
+      <div id="rank-list-normal" class="rank-list" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ========== PLAYING ========== -->
+  <section id="view-playing" class="view hidden">
+    <div class="play-top"><button id="btn-home" type="button" class="btn btn-ghost">← 返回首页</button><div id="mode-badge" class="mode-badge mode-normal" aria-live="polite">普通模式</div><button id="btn-peek" type="button" class="btn btn-ghost">🔍 查看部署</button></div>
+    <div class="scorebar" aria-label="游戏状态">
+      <div class="stat"><span class="stat-ico" aria-hidden="true">⏱</span><span class="stat-label">时间</span><strong id="stat-time">0s</strong></div>
+      <div class="stat"><span class="stat-ico" aria-hidden="true">💣</span><span class="stat-label">投弹</span><strong id="stat-bombs">0</strong></div>
+      <div class="stat hl"><span class="stat-ico" aria-hidden="true">✈</span><span class="stat-label">击落</span><strong id="stat-sunk">0 / 3</strong></div>
+    </div>
+    <div class="board-wrap"><div id="board" class="board" aria-label="10乘10轰炸棋盘"></div></div>
+    <div class="legend" aria-label="图例">
+      <div class="lg"><i class="m" aria-hidden="true">💧</i><span>空 · 没飞机</span></div>
+      <div class="lg"><i class="h" aria-hidden="true">💥</i><span>伤 · 打中机身</span></div>
+      <div class="lg"><i class="k" aria-hidden="true">✈️</i><span>头 · 击落！</span></div>
+    </div>
+    <div id="hint" class="hint" aria-live="polite">瞄准机头才能击落哦～</div>
+  </section>
+</div>
+
+<!-- ========== HELP ========== -->
+<div id="help-overlay" class="overlay hidden">
+  <div class="card help-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <h2 id="help-title">玩法规则 📖</h2>
+    <div class="help-row"><span class="sym m" aria-hidden="true">💧</span><div><b>空</b><span>这里没有飞机，换个地方试试</span></div></div>
+    <div class="help-row"><span class="sym h" aria-hidden="true">💥</span><div><b>伤</b><span>打到飞机啦，但还不是机头</span></div></div>
+    <div class="help-row"><span class="sym k" aria-hidden="true">✈️</span><div><b>头</b><span>机头命中！这一架被击落了</span></div></div>
+    <div class="help-sec">1513 飞机长什么样？</div>
+    <div id="mini-plane" class="plane-mini" aria-label="1513飞机形状，机头朝上"></div>
+    <div class="mini-cap">1 个头 · 5 个翼 · 1 个身 · 3 个尾，共 10 格<br>可以旋转成上 / 右 / 下 / 左四个方向</div>
+    <div class="help-sec">斜飞机长什么样？</div>
+    <div id="mini-slant" class="plane-mini slant-grid" aria-label="斜飞机形状"></div>
+    <div class="mini-cap">同样是 1513，只是斜着摆——格子沿对角线相连<br>勾选「加入斜飞机模式」后，棋盘上会有 2 架正常 + 1 架斜飞机</div>
+    <div class="help-sec">怎么算分？</div>
+    <div class="score-rule">
+      分数 = 10,000,000 ÷ (用时秒数 × 投弹数的平方)<br>
+      结果四舍五入取整，用时越短、投弹越少，分数越高！<br>
+      例如：用时 60 秒、投弹 45 发 → 约 <b>82 分</b>
+    </div>
+    <div class="btn-row" style="margin-top:16px;"><button id="btn-help-close" type="button" class="btn btn-primary">关闭</button></div>
+  </div>
+</div>
+
+<!-- ========== RESULT ========== -->
+<div id="result-overlay" class="overlay hidden">
+  <div id="result-card" class="card result-card draggable" role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <h2 id="result-title" class="result-title drag-handle" title="按住标题可拖动弹窗">任务完成！</h2>
+    <div class="drag-tip">↕ 按住标题可拖动，查看自己的棋盘</div>
+    <div id="result-score" class="result-score">0</div>
+    <div class="result-unit">分</div>
+    <div id="result-detail" class="result-detail">用时 0 秒 · 投弹 0 枚</div>
+    <div id="result-high" class="result-high">🏆 最高分 0</div>
+    <div id="result-cheat" class="cheat-note hidden">🔓 本局使用过查看部署，成绩不计入排行榜</div>
+    <div class="reveal-wrap">
+      <div class="reveal-title">🗺️ 电脑的飞机阵型</div>
+      <div id="result-reveal" class="reveal-grid"></div>
+      <div class="reveal-legend"><span><i style="background:#FF6B6B"></i>飞机1</span><span><i style="background:#2E86AB"></i>飞机2</span><span><i style="background:#55B98A"></i>飞机3</span><span>黑框＝机头</span></div>
+    </div>
+    <div class="btn-row" style="margin-top:14px;"><button id="btn-again" type="button" class="btn btn-primary">再来一局</button><button id="btn-result-home" type="button" class="btn btn-secondary">返回首页</button></div>
+  </div>
+</div>
+
+<!-- ========== 密码输入 ========== -->
+<div id="pwd-overlay" class="overlay hidden">
+  <div id="pwd-card" class="card pwd-card draggable" role="dialog" aria-modal="true" aria-labelledby="pwd-title">
+    <h2 id="pwd-title" class="drag-handle" title="按住标题可拖动弹窗">🔐 查看部署</h2>
+    <div class="drag-tip">↕ 按住标题可拖动，查看自己的棋盘</div>
+    <p class="pwd-desc">输入密码可提前查看电脑的飞机阵型<br>使用后本局成绩将<b>不计入排行榜</b></p>
+    <form id="pwd-form" autocomplete="off">
+      <input id="pwd-input" class="pwd-input" type="password" inputmode="numeric" maxlength="4" placeholder="····" aria-label="4位密码">
+      <div id="pwd-msg" class="pwd-msg" aria-live="polite"></div>
+      <div class="btn-row"><button id="btn-pwd-cancel" type="button" class="btn btn-secondary">取消</button><button id="btn-pwd-ok" type="submit" class="btn btn-primary">确认</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- ========== 提前查看阵型 ========== -->
+<div id="peek-overlay" class="overlay hidden">
+  <div id="peek-card" class="card draggable" role="dialog" aria-modal="true" aria-labelledby="peek-title">
+    <h2 id="peek-title" class="drag-handle" title="按住标题可拖动弹窗">🗺️ 电脑的飞机阵型</h2>
+    <div class="drag-tip">↕ 按住标题可拖动，查看自己的棋盘</div>
+    <div class="cheat-note">🔓 已开启查看部署，本局成绩不计入排行榜</div>
+    <div class="reveal-wrap">
+      <div id="peek-reveal" class="reveal-grid"></div>
+      <div class="reveal-legend"><span><i style="background:#FF6B6B"></i>飞机1</span><span><i style="background:#2E86AB"></i>飞机2</span><span><i style="background:#55B98A"></i>飞机3</span><span>黑框＝机头</span></div>
+    </div>
+    <div class="btn-row" style="margin-top:14px;"><button id="btn-peek-close" type="button" class="btn btn-primary">继续游戏</button></div>
+  </div>
+</div>
+
+<div id="fx" aria-hidden="true"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   纯逻辑区：坐标 / 1513 形状 / 布阵 / 判定 / 计分
+   ========================================================= */
+const OFFSETS = [
+  [0, 0, 'head'],
+  [-2, 1, 'wing'], [-1, 1, 'wing'], [0, 1, 'wing'], [1, 1, 'wing'], [2, 1, 'wing'],
+  [0, 2, 'body'],
+  [-1, 3, 'tail'], [0, 3, 'tail'], [1, 3, 'tail']
+];
+
+function rot(dx, dy, dir) {
+  for (let i = 0; i < dir; i++) { const t = dx; dx = -dy; dy = t; }
+  return [dx, dy];
+}
+function planeCells(hx, hy, dir) {
+  return OFFSETS.map(function (o) {
+    const r = rot(o[0], o[1], dir);
+    return { x: hx + r[0], y: hy + r[1], part: o[2] };
+  });
+}
+// 斜飞机：标准1513斜向摆放（对角相邻），10格=1头+5翼+1身+3尾，同样可旋转四朝向
+const SLANT_OFFSETS = [
+  [0, 0, 'head'],
+  [-1, -1, 'body'],
+  [-2, -4, 'wing'], [-3, -3, 'wing'], [-4, -2, 'wing'], [0, -2, 'wing'], [1, -3, 'wing'],
+  [-2, -2, 'tail'], [-2, 0, 'tail'], [-3, 1, 'tail']
+];
+function slantPlaneCells(hx, hy, dir) {
+  return SLANT_OFFSETS.map(function (o) {
+    const r = rot(o[0], o[1], dir);
+    return { x: hx + r[0], y: hy + r[1], part: o[2] };
+  });
+}
+function inBounds(x, y) { return x >= 0 && x < 10 && y >= 0 && y < 10; }
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+const FALLBACK_LAYOUT = [
+  { hx: 2, hy: 0, dir: 0 }, { hx: 7, hy: 0, dir: 0 }, { hx: 5, hy: 8, dir: 2 }
+];
+// 所有合法单机摆法（枚举一次）：普通飞机 / 斜飞机
+const ALL_CANDIDATES = (function () {
+  const arr = [];
+  for (let dir = 0; dir < 4; dir++) for (let hy = 0; hy < 10; hy++) for (let hx = 0; hx < 10; hx++) {
+    const cells = planeCells(hx, hy, dir);
+    if (cells.length === 10 && cells.every(function (c) { return inBounds(c.x, c.y); })) {
+      arr.push({ hx: hx, hy: hy, dir: dir, cells: cells, slant: false });
+    }
+  }
+  return arr;
+})();
+const SLANT_CANDIDATES = (function () {
+  const arr = [];
+  for (let dir = 0; dir < 4; dir++) for (let hy = 0; hy < 10; hy++) for (let hx = 0; hx < 10; hx++) {
+    const cells = slantPlaneCells(hx, hy, dir);
+    if (cells.length === 10 && cells.every(function (c) { return inBounds(c.x, c.y); })) {
+      arr.push({ hx: hx, hy: hy, dir: dir, cells: cells, slant: true });
+    }
+  }
+  return arr;
+})();
+// 紧凑度评分：机头两两最大曼哈顿距离为主、包围盒为辅，越小越紧凑
+function tightness(P) {
+  let mh = 0;
+  for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++)
+    mh = Math.max(mh, Math.abs(P[i].hx - P[j].hx) + Math.abs(P[i].hy - P[j].hy));
+  let a = 99, b = -1, c = 99, d = -1;
+  P.forEach(function (p) { p.cells.forEach(function (q) {
+    a = Math.min(a, q.x); b = Math.max(b, q.x); c = Math.min(c, q.y); d = Math.max(d, q.y);
+  }); });
+  return mh * 10 + (b - a + 1) * (d - c + 1);
+}
+// mode: 'normal'=3架正常 | 'tight'=3架正常紧凑 | 'slant'=2正常+1斜(紧凑优先)
+function oneLayout(mode) {
+  const useSlant = mode === 'slant';
+  const pool = shuffle(ALL_CANDIDATES.slice());
+  const slants = shuffle(SLANT_CANDIDATES.slice());
+  const chosen = [], occupied = new Set();
+  let slantPlaced = false;
+  // 斜飞机模式：先随机放一架斜飞机
+  if (useSlant && slants.length) {
+    const s = slants[0];
+    chosen.push({ id: 0, hx: s.hx, hy: s.hy, dir: s.dir, cells: s.cells, slant: true, sunk: false });
+    s.cells.forEach(function (p) { occupied.add(p.y * 10 + p.x); });
+    slantPlaced = true;
+  }
+  for (let i = 0; i < pool.length; i++) {
+    const c = pool[i];
+    if (c.cells.every(function (p) { return !occupied.has(p.y * 10 + p.x); })) {
+      chosen.push({ id: chosen.length, hx: c.hx, hy: c.hy, dir: c.dir, cells: c.cells, slant: false, sunk: false });
+      c.cells.forEach(function (p) { occupied.add(p.y * 10 + p.x); });
+      if (chosen.length === 3) return chosen;
+    }
+  }
+  if (useSlant && !slantPlaced) return null;
+  return null;
+}
+function generateLayout(mode) {
+  const preferTight = (mode === 'tight' || mode === 'slant');
+  let chosen = null;
+  if (preferTight) {
+    const samples = mode === 'slant' ? 24 : 24;
+    let best = null, bestScore = Infinity;
+    for (let i = 0; i < samples; i++) {
+      const P = oneLayout(mode);
+      if (!P) continue;
+      const s = tightness(P);
+      if (s < bestScore) { bestScore = s; best = P; }
+    }
+    chosen = best;
+  } else {
+    chosen = oneLayout(mode);
+  }
+  if (!chosen) {
+    chosen = FALLBACK_LAYOUT.map(function (p, i) {
+      return { id: i, hx: p.hx, hy: p.hy, dir: p.dir, cells: planeCells(p.hx, p.hy, p.dir), slant: false, sunk: false };
+    });
+  }
+  chosen.forEach(function (p, i) { p.id = i; p.sunk = false; });
+  return chosen;
+}
+
+/* 分数 = 10,000,000 ÷ (用时秒数 × 投弹数²)，四舍五入；用时至少按 1 秒、投弹至少按 1 发防止除零 */
+function computeScore(T, B) {
+  const t = Math.max(1, Math.floor(T) || 0), b = Math.max(1, Math.floor(B) || 0);
+  return Math.round(10000000 / (t * b * b));
+}
+
+const PHRASES = {
+  miss: ['扑通——没炸到，再试试～', '哎呀，落空啦！', '咦？这里没有飞机哦～'],
+  hit: ['打中啦！不过还没击落，继续加油！', '诶呀，擦到飞机翅膀啦！', '有动静！机头在哪儿呢？'],
+  head: ['轰！击落一架！太棒啦！', '哇！机头命中，飞机掉下来咯！', '漂亮！又击落一架！']
+};
+const DEFAULT_HINT = '瞄准机头才能击落哦～';
+const REPEAT_HINT = '这里炸过啦，换个地方试试～';
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+let planes = [];
+let state = Array.from({ length: 10 }, function () { return Array(10).fill('unknown'); });
+let bombs = 0, sunkCount = 0, phase = 'IDLE', currentMode = 'normal';
+let cheatUsed = false;   // 本局是否用过「查看部署」，用过则不计成绩
+let timerStarted = false, startTime = 0, endTime = 0, pausedTotal = 0, pauseStart = 0;
+const pauseReasons = new Set();   // 'hidden' 切后台 / 'home' 返回首页，可叠加
+let hasPausedGame = false;        // 是否存在一局暂停中、可继续的游戏
+
+function pauseClock(reason) {
+  if (pauseReasons.size === 0) pauseStart = performance.now();
+  pauseReasons.add(reason);
+}
+function resumeClock(reason) {
+  pauseReasons.delete(reason);
+  if (pauseReasons.size === 0 && pauseStart) {
+    pausedTotal += performance.now() - pauseStart;
+    pauseStart = 0;
+  }
+}
+
+function applyShot(x, y) {
+  if (state[y][x] !== 'unknown') return { type: 'repeat' };
+  if (!timerStarted) { timerStarted = true; startTime = performance.now(); }
+  bombs++;
+  let cell = null, plane = null;
+  for (let i = 0; i < planes.length; i++) {
+    const found = planes[i].cells.find(function (c) { return c.x === x && c.y === y; });
+    if (found) { cell = found; plane = planes[i]; break; }
+  }
+  if (!cell) { state[y][x] = 'miss'; return { type: 'miss', plane: null }; }
+  if (cell.part === 'head') {
+    state[y][x] = 'head';
+    if (!plane.sunk) { plane.sunk = true; sunkCount++; }
+    return { type: 'head', plane: plane };
+  }
+  state[y][x] = 'hit';
+  return { type: 'hit', plane: plane };
+}
+function currentElapsedMs() {
+  if (!timerStarted) return 0;
+  const end = (phase === 'RESULT') ? endTime : (pauseReasons.size ? pauseStart : performance.now());
+  return Math.max(0, end - startTime - pausedTotal);
+}
+function getT() { return Math.max(0, Math.floor(currentElapsedMs() / 1000)); }
+function colLetter(x) { return String.fromCharCode(65 + x); }
+
+/* =========================================================
+   UI 区：所有 document 访问只在 init() 之后发生
+   ========================================================= */
+let board, viewIdle, viewPlaying, helpOverlay, resultOverlay, hintEl, fxLayer;
+let statTime, statBombs, statSunk;
+let timerInterval = null, hintTimer = null, hintToken = 0;
+let reduceMotion = { matches: false };
+let lastHeadBtn = null;
+
+/* ---- 三排行榜：高难度榜 / 斜飞机榜 / 普通榜，各最多 5 条，localStorage ---- */
+const RANK_TOP_N = 5;
+const RANK_KEYS = { tight: 'bombPlaneScoresTight', normal: 'bombPlaneScoresNormal', slant: 'bombPlaneScoresSlant' };
+const RANK_TITLES = { tight: '高难度榜', normal: '普通榜', slant: '斜飞机榜' };
+function nowStamp() {
+  const d = new Date(), p = function (n) { return String(n).padStart(2, '0'); };
+  return d.getFullYear() + '/' + p(d.getMonth() + 1) + '/' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+// 旧版单榜数据迁移到普通榜（一次性，保留历史成绩）
+(function migrateRanks() {
+  try {
+    const old = localStorage.getItem('bombPlaneScores');
+    if (old && !localStorage.getItem(RANK_KEYS.normal)) localStorage.setItem(RANK_KEYS.normal, old);
+  } catch (e) {}
+})();
+function loadScores(mode) {
+  try {
+    const raw = JSON.parse(localStorage.getItem(RANK_KEYS[mode]) || '[]');
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(function (e) { return e && typeof e.score === 'number'; })
+      .sort(function (a, b) { return b.score - a.score; }).slice(0, RANK_TOP_N);
+  } catch (e) { return []; }
+}
+function saveScore(score, t, b, mode) {
+  const list = loadScores(mode);
+  const entry = { score: score, t: t, b: b, date: nowStamp() };
+  list.push(entry);
+  list.sort(function (a, b) { return b.score - a.score; });
+  const top = list.slice(0, RANK_TOP_N);
+  try { localStorage.setItem(RANK_KEYS[mode], JSON.stringify(top)); } catch (e) {}
+  const idx = top.indexOf(entry);
+  return idx < 0 ? 0 : idx + 1;
+}
+const clearArmed = { tight: false, normal: false, slant: false }, clearTimer = { tight: null, normal: null, slant: null };
+function clearRanks(mode) {
+  const btn = document.getElementById('btn-clear-' + mode);
+  if (!clearArmed[mode]) {
+    clearArmed[mode] = true;
+    btn.textContent = '再点一次确认';
+    btn.classList.add('armed');
+    clearTimeout(clearTimer[mode]);
+    clearTimer[mode] = setTimeout(function () { disarmClear(mode); }, 3000);
+    return;
+  }
+  try { localStorage.removeItem(RANK_KEYS[mode]); } catch (e) {}
+  disarmClear(mode);
+  renderRanks();
+}
+function disarmClear(mode) {
+  clearArmed[mode] = false;
+  const btn = document.getElementById('btn-clear-' + mode);
+  if (btn) { btn.textContent = '清除成绩'; btn.classList.remove('armed'); }
+  clearTimeout(clearTimer[mode]);
+}
+function bestScore(mode) { const s = loadScores(mode); return s.length ? s[0].score : 0; }
+function renderRanks() {
+  ['tight', 'normal', 'slant'].forEach(function (mode) {
+    const el = document.getElementById('rank-list-' + mode);
+    if (!el) return;
+    const list = loadScores(mode);
+    if (!list.length) { el.innerHTML = '<div class="rank-empty">还没有战绩，快来打响第一炮吧！</div>'; return; }
+    el.innerHTML = list.map(function (e, i) {
+      const medal = ['🥇', '🥈', '🥉'][i] || String(i + 1);
+      return '<div class="rank-row ' + (i < 3 ? 'r' + (i + 1) : '') + '">' +
+        '<span class="rank-no">' + medal + '</span>' +
+        '<span class="rank-score">' + e.score + ' 分</span>' +
+        '<span class="rank-meta"><span class="rank-date">' + (e.date || '') + '</span>' + (e.t || 0) + 's · ' + (e.b || 0) + '发</span></div>';
+    }).join('');
+  });
+}
+
+function buildBoard() {
+  let html = '<div class="hcell" aria-hidden="true"></div>';
+  for (let x = 0; x < 10; x++) html += '<div class="hcell" aria-hidden="true">' + colLetter(x) + '</div>';
+  for (let y = 0; y < 10; y++) {
+    html += '<div class="hcell" aria-hidden="true">' + y + '</div>';
+    for (let x = 0; x < 10; x++) {
+      html += '<button type="button" class="cell" data-x="' + x + '" data-y="' + y +
+        '" aria-label="' + colLetter(x) + y + '，未探索，按回车投弹"></button>';
+    }
+  }
+  board.innerHTML = html;
+}
+function renderMiniPlane() {
+  const map = {};
+  OFFSETS.forEach(function (o) { map[(o[0] + 2) + ',' + o[1]] = o[2]; });
+  const label = { head: '头', wing: '翼', body: '身', tail: '尾' };
+  let html = '';
+  for (let y = 0; y < 4; y++) for (let x = -2; x <= 2; x++) {
+    const part = map[(x + 2) + ',' + y];
+    html += '<div class="pm ' + (part || '') + '">' + (part ? label[part] : '') + '</div>';
+  }
+  document.getElementById('mini-plane').innerHTML = html;
+}
+function renderMiniSlant() {
+  const map = {};
+  SLANT_OFFSETS.forEach(function (o) { map[(o[0] + 4) + ',' + (o[1] + 4)] = o[2]; });
+  const label = { head: '头', wing: '翼', body: '身', tail: '尾' };
+  let html = '';
+  for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) {
+    const part = map[x + ',' + y];
+    html += '<div class="pm ' + (part || '') + '">' + (part ? label[part] : '') + '</div>';
+  }
+  document.getElementById('mini-slant').innerHTML = html;
+}
+// 渲染完整阵型网格：三架飞机各一色，机头加黑框
+function renderReveal(elId) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const map = {};
+  planes.forEach(function (p, i) { p.cells.forEach(function (c) { map[c.y * 10 + c.x] = { i: i, part: c.part }; }); });
+  const label = { head: '头', wing: '翼', body: '身', tail: '尾' };
+  let html = '<div class="rv-h"></div>';
+  for (let x = 0; x < 10; x++) html += '<div class="rv-h">' + colLetter(x) + '</div>';
+  for (let y = 0; y < 10; y++) {
+    html += '<div class="rv-h">' + y + '</div>';
+    for (let x = 0; x < 10; x++) {
+      const info = map[y * 10 + x];
+      if (!info) html += '<div class="rv-c"></div>';
+      else html += '<div class="rv-c p' + info.i + (info.part === 'head' ? ' head' : '') + '">' + label[info.part] + '</div>';
+    }
+  }
+  el.innerHTML = html;
+}
+function updateStats() {
+  statTime.textContent = getT() + 's';
+  statBombs.textContent = String(bombs);
+  statSunk.textContent = sunkCount + ' / 3';
+}
+function setHint(text, revert) {
+  const token = ++hintToken;
+  clearTimeout(hintTimer);
+  hintEl.textContent = text;
+  hintEl.classList.remove('fade');
+  if (revert !== false) {
+    hintTimer = setTimeout(function () {
+      if (token !== hintToken) return;
+      hintEl.classList.add('fade');
+      setTimeout(function () {
+        if (token !== hintToken) return;
+        hintEl.textContent = DEFAULT_HINT;
+        hintEl.classList.remove('fade');
+      }, 200);
+    }, 1200);
+  }
+}
+function spawnParticles(btn) {
+  if (reduceMotion.matches || !btn || !fxLayer) return;
+  const r = btn.getBoundingClientRect();
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('span');
+    s.className = 'particle';
+    s.textContent = (i % 2) ? '✨' : '⭐';
+    s.style.left = (r.left + r.width / 2) + 'px';
+    s.style.top = (r.top + r.height / 2) + 'px';
+    s.style.setProperty('--dx', Math.round((Math.random() - .5) * 90) + 'px');
+    s.style.setProperty('--dy', Math.round(-30 - Math.random() * 70) + 'px');
+    fxLayer.appendChild(s);
+    setTimeout(function () { s.remove(); }, 650);
+  }
+}
+function markCell(x, y, kind) {
+  const btn = board.querySelector('button.cell[data-x="' + x + '"][data-y="' + y + '"]');
+  if (!btn) return null;
+  btn.className = 'cell ' + kind + ' anim-' + kind;
+  const glyph = { miss: ['💧', '空'], hit: ['💥', '伤'], head: ['✈️', '头'] }[kind];
+  const word = { miss: '空', hit: '伤', head: '头' }[kind];
+  btn.innerHTML = '<span class="ico">' + glyph[0] + '</span><span class="txt">' + glyph[1] + '</span>';
+  btn.setAttribute('aria-label', colLetter(x) + y + '，' + word + '，已炸过');
+  if (reduceMotion.matches) btn.classList.remove('anim-' + kind);
+  else btn.addEventListener('animationend', function () { btn.classList.remove('anim-' + kind); }, { once: true });
+  return btn;
+}
+function lockBoard() {
+  board.querySelectorAll('button.cell').forEach(function (b) { b.disabled = true; });
+}
+function handleBomb(x, y) {
+  if (phase !== 'PLAYING' || !resultOverlay.classList.contains('hidden')) return;
+  const before = state[y][x];
+  const res = applyShot(x, y);
+  if (res.type === 'repeat') { setHint(REPEAT_HINT); return; }
+  const btn = markCell(x, y, res.type);
+  if (before === 'unknown' && res.type === 'head') spawnParticles(btn);
+  updateStats();
+  if (res.type === 'head' && sunkCount === 3) {
+    setHint('三架飞机全部击落！你是超级飞行英雄！', false);
+    endGame();
+  } else if (res.type !== 'repeat') {
+    setHint(pick(PHRASES[res.type]));
+  }
+}
+/* ---- 弹窗拖拽：按住标题栏可移动，方便查看棋盘 ---- */
+function enableDrag(cardId, handleId) {
+  const card = document.getElementById(cardId), handle = document.getElementById(handleId);
+  if (!card || !handle) return;
+  let dragging = false, startX = 0, startY = 0, baseX = 0, baseY = 0;
+  card._resetPos = function () { card.style.transform = ''; };
+  function pos(e) { return (e.touches && e.touches[0]) ? e.touches[0] : e; }
+  handle.addEventListener('mousedown', function (e) {
+    e.preventDefault(); dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(card.style.transform || '');
+    baseX = m ? parseFloat(m[1]) : 0; baseY = m ? parseFloat(m[2]) : 0;
+  });
+  document.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    card.style.transform = 'translate(' + (baseX + e.clientX - startX) + 'px,' + (baseY + e.clientY - startY) + 'px)';
+  });
+  document.addEventListener('mouseup', function () { dragging = false; });
+  handle.addEventListener('touchstart', function (e) {
+    dragging = true;
+    const p = pos(e); startX = p.clientX; startY = p.clientY;
+    const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(card.style.transform || '');
+    baseX = m ? parseFloat(m[1]) : 0; baseY = m ? parseFloat(m[2]) : 0;
+  }, { passive: true });
+  document.addEventListener('touchmove', function (e) {
+    if (!dragging) return;
+    const p = pos(e);
+    card.style.transform = 'translate(' + (baseX + p.clientX - startX) + 'px,' + (baseY + p.clientY - startY) + 'px)';
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend', function () { dragging = false; });
+}
+
+/* ---- 查看部署：密码 0232，使用后本局不计成绩 ---- */
+const PEEK_PASSWORD = '0232';
+function openPwd() {
+  if (phase !== 'PLAYING') return;
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-msg').textContent = '';
+  const card = document.getElementById('pwd-card'); if (card._resetPos) card._resetPos();
+  document.getElementById('pwd-overlay').classList.remove('hidden');
+  document.getElementById('pwd-input').focus();
+}
+function closePwd() {
+  document.getElementById('pwd-overlay').classList.add('hidden');
+  document.getElementById('btn-peek').focus();
+}
+function submitPwd(e) {
+  if (e) e.preventDefault();
+  const val = (document.getElementById('pwd-input').value || '').trim();
+  if (val === PEEK_PASSWORD) {
+    cheatUsed = true;
+    closePwd();
+    renderReveal('peek-reveal');
+    const card = document.getElementById('peek-card'); if (card._resetPos) card._resetPos();
+    document.getElementById('peek-overlay').classList.remove('hidden');
+    document.getElementById('btn-peek-close').focus();
+  } else {
+    document.getElementById('pwd-msg').textContent = '密码不对，再试试～';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+function closePeek() {
+  document.getElementById('peek-overlay').classList.add('hidden');
+  document.getElementById('btn-peek').focus();
+}
+function endGame() {
+  endTime = performance.now();
+  phase = 'RESULT';
+  hasPausedGame = false;
+  clearInterval(timerInterval);
+  lockBoard();
+  const T = getT(), B = bombs;
+  const score = computeScore(T, B);
+  const rank = cheatUsed ? 0 : saveScore(score, T, B, currentMode);
+  document.getElementById('result-score').textContent = String(score);
+  document.getElementById('result-detail').textContent = '用时 ' + T + ' 秒 · 投弹 ' + B + ' 枚';
+  document.getElementById('result-high').textContent = cheatUsed
+    ? '🔓 本局不计入排行榜'
+    : '🏆 ' + RANK_TITLES[currentMode] + '最高分 ' + bestScore(currentMode) + (rank ? ' · 本次第 ' + rank + ' 名' : '');
+  document.getElementById('result-cheat').classList.toggle('hidden', !cheatUsed);
+  renderReveal('result-reveal');
+  renderRanks();
+  const rcard = document.getElementById('result-card'); if (rcard._resetPos) rcard._resetPos();
+  resultOverlay.classList.remove('hidden');
+  document.getElementById('btn-again').focus();
+}
+const MODE_BADGES = {
+  normal: { text: '✈️ 普通模式', cls: 'mode-normal' },
+  tight: { text: '🎯 紧凑高难度', cls: 'mode-tight' },
+  slant: { text: '🛩️ 斜飞机模式', cls: 'mode-slant' }
+};
+function updateModeBadge() {
+  const el = document.getElementById('mode-badge');
+  if (!el) return;
+  const b = MODE_BADGES[currentMode] || MODE_BADGES.normal;
+  el.textContent = b.text;
+  el.className = 'mode-badge ' + b.cls;
+}
+function startGame() {
+  const preferTight = !!(document.getElementById('chk-tight') && document.getElementById('chk-tight').checked);
+  const useSlant = !!(document.getElementById('chk-slant') && document.getElementById('chk-slant').checked);
+  currentMode = useSlant ? 'slant' : (preferTight ? 'tight' : 'normal');
+  updateModeBadge();
+  planes = generateLayout(currentMode);
+  state = Array.from({ length: 10 }, function () { return Array(10).fill('unknown'); });
+  bombs = 0; sunkCount = 0; cheatUsed = false;
+  document.getElementById('pwd-overlay').classList.add('hidden');
+  document.getElementById('peek-overlay').classList.add('hidden');
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-msg').textContent = '';
+  document.getElementById('result-cheat').classList.add('hidden');
+  timerStarted = false; startTime = 0; endTime = 0; pausedTotal = 0; pauseStart = 0;
+  pauseReasons.clear();
+  hasPausedGame = false;
+  phase = 'PLAYING';
+  lastHeadBtn = null;
+  clearInterval(timerInterval);
+  helpOverlay.classList.add('hidden');
+  resultOverlay.classList.add('hidden');
+  viewIdle.classList.add('hidden');
+  viewPlaying.classList.remove('hidden');
+  document.getElementById('btn-resume').classList.add('hidden');
+  buildBoard();
+  updateStats();
+  setHint(DEFAULT_HINT, false);
+  timerInterval = setInterval(function () { if (phase === 'PLAYING') updateStats(); }, 250);
+}
+/* 返回首页：保留棋盘/计时状态，暂停计时；可随时继续 */
+function goHome() {
+  if (phase !== 'PLAYING') return;
+  const btn = document.getElementById('btn-resume');
+  clearInterval(timerInterval);
+  viewPlaying.classList.add('hidden');
+  resultOverlay.classList.add('hidden');
+  viewIdle.classList.remove('hidden');
+  renderRanks();
+  // 没有任何有效投弹（未开始计时）时，视为放弃本局，不保留续玩
+  if (!timerStarted) {
+    hasPausedGame = false;
+    btn.classList.add('hidden');
+    document.getElementById('btn-start').focus();
+    return;
+  }
+  pauseClock('home');
+  hasPausedGame = true;
+  btn.classList.remove('hidden');
+  btn.focus();
+}
+function resumeGame() {
+  if (phase !== 'PLAYING' || !hasPausedGame) return;
+  resumeClock('home');
+  hasPausedGame = false;
+  viewIdle.classList.add('hidden');
+  viewPlaying.classList.remove('hidden');
+  document.getElementById('btn-resume').classList.add('hidden');
+  updateStats();
+  timerInterval = setInterval(function () { if (phase === 'PLAYING') updateStats(); }, 250);
+}
+/* 结算后回首页：该局已结束，不保留 */
+function resultHome() {
+  resultOverlay.classList.add('hidden');
+  viewPlaying.classList.add('hidden');
+  viewIdle.classList.remove('hidden');
+  document.getElementById('btn-resume').classList.add('hidden');
+  renderRanks();
+  document.getElementById('btn-start').focus();
+}
+function bindEvents() {
+  document.getElementById('btn-start').addEventListener('click', startGame);
+  document.getElementById('btn-again').addEventListener('click', startGame);
+  document.getElementById('btn-help').addEventListener('click', function () {
+    helpOverlay.classList.remove('hidden');
+    document.getElementById('btn-help-close').focus();
+  });
+  document.getElementById('btn-help-close').addEventListener('click', function () {
+    helpOverlay.classList.add('hidden');
+    document.getElementById('btn-help').focus();
+  });
+  board.addEventListener('click', function (e) {
+    const btn = e.target.closest('button.cell');
+    if (btn) handleBomb(Number(btn.dataset.x), Number(btn.dataset.y));
+  });
+  board.addEventListener('keydown', function (e) {
+    const btn = e.target.closest('button.cell');
+    if (!btn) return;
+    let x = Number(btn.dataset.x), y = Number(btn.dataset.y);
+    if (e.key === 'ArrowLeft') x--;
+    else if (e.key === 'ArrowRight') x++;
+    else if (e.key === 'ArrowUp') y--;
+    else if (e.key === 'ArrowDown') y++;
+    else return;
+    e.preventDefault();
+    x = Math.max(0, Math.min(9, x));
+    y = Math.max(0, Math.min(9, y));
+    const next = board.querySelector('button.cell[data-x="' + x + '"][data-y="' + y + '"]');
+    if (next) next.focus();
+  });
+  document.getElementById('btn-home').addEventListener('click', goHome);
+  document.getElementById('btn-resume').addEventListener('click', resumeGame);
+  document.getElementById('btn-result-home').addEventListener('click', resultHome);
+  document.getElementById('btn-peek').addEventListener('click', openPwd);
+  document.getElementById('btn-pwd-cancel').addEventListener('click', closePwd);
+  document.getElementById('pwd-form').addEventListener('submit', submitPwd);
+  document.getElementById('btn-peek-close').addEventListener('click', closePeek);
+  document.getElementById('btn-clear-tight').addEventListener('click', function () { clearRanks('tight'); });
+  document.getElementById('btn-clear-normal').addEventListener('click', function () { clearRanks('normal'); });
+  document.getElementById('btn-clear-slant').addEventListener('click', function () { clearRanks('slant'); });
+  // 两个模式勾选项互斥：勾选一个自动取消另一个
+  const cbTight = document.getElementById('chk-tight'), cbSlant = document.getElementById('chk-slant');
+  cbTight.addEventListener('change', function () { if (cbTight.checked) cbSlant.checked = false; });
+  cbSlant.addEventListener('change', function () { if (cbSlant.checked) cbTight.checked = false; });
+  document.addEventListener('visibilitychange', function () {
+    if (phase !== 'PLAYING' || !timerStarted) return;
+    if (document.hidden) pauseClock('hidden');
+    else resumeClock('hidden');
+  });
+}
+function init() {
+  board = document.getElementById('board');
+  viewIdle = document.getElementById('view-idle');
+  viewPlaying = document.getElementById('view-playing');
+  helpOverlay = document.getElementById('help-overlay');
+  resultOverlay = document.getElementById('result-overlay');
+  hintEl = document.getElementById('hint');
+  fxLayer = document.getElementById('fx');
+  statTime = document.getElementById('stat-time');
+  statBombs = document.getElementById('stat-bombs');
+  statSunk = document.getElementById('stat-sunk');
+  if (window.matchMedia) reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)') || reduceMotion;
+  renderMiniPlane();
+  renderMiniSlant();
+  renderRanks();
+  enableDrag('pwd-card', 'pwd-title');
+  enableDrag('peek-card', 'peek-title');
+  enableDrag('result-card', 'result-title');
+  bindEvents();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
